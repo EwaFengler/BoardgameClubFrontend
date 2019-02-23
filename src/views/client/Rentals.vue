@@ -8,8 +8,7 @@
         <ul>
           <li>Kiedy: {{ rental.dateObj.toLocaleString() }}</li>
           <li>Jak długo: {{ rental.duration }}min</li>
-          <!-- TODO: po dodaniu nazwy gry do wypożyczeń odkomentować, w razie potrzeby dostosować -->
-          <!-- <li>W co: {{ rental.gameName }}</li> -->
+          <li>W co: {{ rental.readOnlyGameName }}</li>
           <li>
             <router-link :to="{ name: 'editRental', params: { 'rentalId':rental.id } }">
               <button>Edytuj</button>
@@ -37,47 +36,22 @@ export default {
     }
   },
   mounted: function () {
-    // INFO: W momencie pisania endpoint nie działał
-    // HTTP.get(`clients/${this.$route.params.clientId}/rentals`)
-    // .then(response => {
-    //   if(response.data){
-        // TODO: odkomentować faktyczne przypisanie, usunąć mocka
-        // this.rentals = response.data
-        /* usuwanie - początek */
-        this.rentals = [
-          {
-            id: 1,
-            copyId: 1,
-            duration: 120,
-            rentalTime: "2019-02-21T04:35:09.712Z"
-          },
-          {
-            id: 2,
-            copyId: 2,
-            duration: 60,
-            rentalTime: "2019-02-22T04:35:09.712Z"
-          }
-        ]
-        /* usuwanie - koniec */
+    HTTP.get(`clients/${this.$route.params.clientId}/rentals`)
+    .then(response => {
+      if(response.data){
+        this.rentals = response.data
         this.rentals.forEach(e => {
-          e.dateObj = new Date(e.rentalTime)
+          e.dateObj = new Date(e.startTime)
         })
-    //   }
-    // })
-    // .catch(() => {
-    //   this.statusMsg = "wystąpił błąd"
-    // })
+      }
+    })
+    .catch(() => {
+      this.statusMsg = "wystąpił błąd"
+    })
   },
   methods: {
     deleteRental: function (rental) {
-      // TODO: po dodaniu informacji o błędzie:
-      // - odkomentowanie ifa
-      // - dostosowanie nazwy zmiennej jeżeli to nie jest "errorMessage"
-      // - jeżeli nie działa dla czegoś, co powoduje błąd - np. ponowna próba rezygnacji z wypożyczenia,
-      // zakomentować ifa, w miejscu ifa wyświetlić response w konsoli przeglądarki:
-      // console.log(response)
-      // i odpowiednio zmienić nazwę zmiennej lub naprawić backend.
-      // INFO: nie dało się sprawdzić endpointa
+      // TODO: errorMessage
       HTTP.delete(`private_rentals/${rental.id}`)
       .then(response => {
         // if(response.data){

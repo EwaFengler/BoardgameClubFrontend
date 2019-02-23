@@ -47,8 +47,8 @@ export default {
         this.games = response.data
       }
     })
-    .catch(e => {
-      this.statusMsg = e
+    .catch(() => {
+      this.statusMsg = "wystąpił błąd"
     })
   },
   methods: {
@@ -59,7 +59,7 @@ export default {
         this.games.splice(this.games.indexOf(game), 1);
         this.statusMsg = "pomyślnie usunięto grę";
       })
-      .catch(e => {
+      .catch(() => {
         this.statusMsg = "wystąpił błąd"
       })
     }

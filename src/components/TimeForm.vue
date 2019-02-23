@@ -1,25 +1,25 @@
 <template>
-  <div>
+  <form>
     Data:<br>
-    <input type="date" name="day" v-model="tournament.date">
+    <input type="date" v-model="timeObject.date">
     <br>
     Godzina:<br>
-    <input type="time" name="time" v-model="tournament.time">
+    <input type="time" v-model="timeObject.time">
     <br>
     Jak długo:<br>
-    <input type="number" min="1" v-model="tournament.duration">min
+    <input type="number" min="1" v-model="timeObject.duration">min
     <br><br>
     <button @click="proceed">dalej</button>
     <p v-for="statusMsg in statusMsgs">{{ statusMsg }}</p>
-  </div>
+  </form>
 </template>
 
 <script>
 
 export default {
-  name: 'tournamentTime',
+  name: 'timeForm',
   props: [
-    'tournament'
+    'timeObject'
   ],
   data () {
     return {
@@ -29,16 +29,19 @@ export default {
   methods: {
     proceed: function () {
       this.statusMsgs = [];
-      if(this.tournament.date == null){
+      if(this.timeObject.date == null){
         this.statusMsgs.push("wybierz datę");
       }
-      if(this.tournament.time == null){
+      if(this.timeObject.time == null){
         this.statusMsgs.push("wybierz godzinę");
       }
-      if(this.tournament.duration <= 0){
+      if(this.timeObject.duration <= 0){
         this.statusMsgs.push("czas trwania turnieju powinien być dodatni");
       }
-      this.$emit('timeFilled');
+      if(this.statusMsgs.length === 0){
+        this.timeObject.startTime = this.timeObject.date + 'T' + this.timeObject.time;
+        this.$emit('timeFilled');
+      }
     },
   }
 }

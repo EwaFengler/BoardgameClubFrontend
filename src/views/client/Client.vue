@@ -26,17 +26,23 @@ export default {
     checkForId: function (clientId) {
       HTTP.get(`clients/${clientId}/exists`)
       .then(response => {
-        if(response.data === true){
-          this.validId = true;
+        if(response.data){
+          if(response.data.errorMessage === null && response.data.value){
+              this.validId = true;
+          }
+          else {
+            this.validId = false;
+            this.errorMsg = response.data.errorMessage || "użytkownik o podanym ID nie istnieje";
+          }
         }
         else {
           this.validId = false;
-          this.errorMsg = "użytkownik o podanym ID nie istnieje";
+          this.errorMsg = "wystąpił błąd";
         }
       })
-      .catch(e => {
+      .catch(() => {
         this.validId = false;
-        this.errorMsg = e;
+        this.errorMsg = "wystąpił błąd";
       })
     }
   }

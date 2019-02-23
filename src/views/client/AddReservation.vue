@@ -3,7 +3,7 @@
     <reservation-form
       v-bind:reservation="reservation"
       btnText="Rezerwuj stolik"
-      @submit="addReservation"/>
+      @submit="addReservation($event)"/>
       <p v-if="statusMsg">{{ statusMsg }}</p>
   </div>
 </template>
@@ -21,23 +21,24 @@ export default {
     return {
       reservation: {
         clientId: this.$route.params.clientId,
+        startTime: '',
         duration: 1,
         date: null,
         time: null,
-        reservationTime: '',
         tableId: null
       },
       statusMsg: ''
     }
   },
   methods: {
-    addReservation: function () {
-      HTTP.post(`private_reservations`, this.reservation)
+    addReservation: function (reservation) {
+      // TODO: errorMessage
+      HTTP.post(`private_reservations`, reservation)
       .then(() => {
         this.statusMsg = "zarezerwowano stolik"
       })
-      .catch(e => {
-        this.statusMsg = e // TODO - ludzki błąd
+      .catch(() => {
+        this.statusMsg = "wystąpił błąd"
       })
     }
   }

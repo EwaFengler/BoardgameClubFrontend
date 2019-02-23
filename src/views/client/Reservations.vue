@@ -4,22 +4,20 @@
       <button>Zarezerwuj stolik</button>
     </router-link>
     <ul>
-      <li v-for="reservation in reservations" :key="reservation.id">
+      <li v-for="r in reservations" :key="r.privateReservation.id">
         <ul>
-          <li>{{ reservation.reservationTime }}</li>
-          <li>{{ reservation.duration }}</li>
-          <li>{{ reservation.numberOfSits }}</li>
-          <li v-if="reservation.tutor === null">
-            <button>Zamów instruktora</button>
-          </li>
-          <li v-else>Instruktor: {{ reservation.tutor }} <button>Zrezygnuj</button></li>
+          <li>Kiedy: {{ r.dateObj.toLocaleString() }}</li>
+          <li>Jak długo: {{ r.privateReservation.duration }}</li>
+          <li>Liczba miejsc: {{ r.numberOfSits }}</li>
+          <li v-if="r.privateReservation.tutorId === null">Brak instruktora</li>
+          <li v-else>Instruktor: {{ r.privateReservation.tutor }}</li>
           <li>
-            <router-link :to="{ name: 'editReservation', params: { 'reservationId': reservation.id } }">
+            <router-link :to="{ name: 'editReservation', params: { 'reservationId': r.privateReservation.id } }">
               <button>Edytuj</button>
             </router-link>
           </li>
           <li>
-            <button @click="cancelReservation(reservation)">Zrezygnuj</button>
+            <button @click="cancelReservation(r)">Zrezygnuj</button>
           </li>
         </ul>
       </li>
@@ -40,42 +38,30 @@ export default {
     }
   },
   mounted: function () {
-    // HTTP.get(`clients/${this.$route.params.clientId}/reservations`)
-    // .then(response => {
-    //   if(response.data) {
-        // this.reservations = response.data
-        this.reservations = [
-          {
-            id: 1,
-            reservationTime: "le timestamp",
-            duration: 120,
-            numberOfSits: 4,
-            tutorId: null
-          },
-          {
-            id: 2,
-            reservationTime: "le timestamp",
-            duration: 90,
-            numberOfSits: 3,
-            tutorId: 1
-          }
-        ]
-    //   }
-    // })
-    // .catch(e => {
-    //   this.statusMsg = e // TODO - ludzki błąd
-    // })
+    HTTP.get(`clients/${this.$route.params.clientId}/reservations`)
+    .then(response => {
+      if(response.data) {
+        this.reservations = response.data
+        this.reservations.forEach(r => {
+          r.dateObj = new Date(r.privateReservation.startTime)
+        })
+      }
+    })
+    .catch(() => {
+      this.statusMsg = "wystąpił błąd"
+    })
   },
   methods: {
     cancelReservation: function (reservation) {
-      // HTTP.delete(`private_reservations/${reservation.id}`) //TODO
-      // .then(() => {
-      this.reservations.splice(this.reservations.indexOf(reservation), 1);
-      this.statusMsg = "anulowano rezerwację"
-      // })
-      // .catch(e => {
-      //   this.statusMsg = e // TODO - ludzki błąd
-      // })
+      //TODO: errorMessage
+      HTTP.delete(`private_reservations/${reservation.privateReservation.id}`)
+      .then(() => {
+        this.reservations.splice(this.reservations.indexOf(reservation), 1);
+        this.statusMsg = "anulowano rezerwację"
+      })
+      .catch(() => {
+        this.statusMsg = "wystąpił błąd"
+      })
     }
   }
 }

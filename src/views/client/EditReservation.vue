@@ -1,10 +1,10 @@
 <template>
   <div>
     <reservation-form
-      v-bind:reservation="reservation"
-      btnText="Zapisz"
-      @submit="udpateReservation"/>
-      <p v-if="statusMsg">{{ statusMsg }}</p>
+    v-bind:reservation="reservation"
+    btnText="Zapisz"
+    @submit="udpateReservation"/>
+    <p v-if="statusMsg">{{ statusMsg }}</p>
   </div>
 </template>
 
@@ -28,20 +28,24 @@ export default {
     .then(response => {
       if(response.data){
         this.reservation = response.data;
+        console.log(this.reservation);
+        this.reservation.date = this.reservation.startTime.substr(0, 10);
+        this.reservation.time = this.reservation.startTime.substr(11, 5);
       }
     })
-    .catch(e => {
-      this.statusMsg = e // TODO - ludzki błąd
+    .catch(() => {
+      this.statusMsg = "wystąpił błąd"
     })
   },
   methods: {
     udpateReservation: function () {
+      // TODO: errorMessage
       HTTP.put(`private_reservations`, this.reservation)
       .then(() => {
         this.statusMsg = "pomyślnie zmieniono rezerwację";
       })
-      .catch(e => {
-        this.statusMsg = e // TODO - ludzki błąd
+      .catch(() => {
+        this.statusMsg = "wystąpił błąd"
       })
     }
   }

@@ -1,20 +1,21 @@
 <template>
   <form v-on:submit.prevent="onSubmitButtonClicked">
-    Data:<br>
-    <input type="date" v-model="reservation.date">
-    <br>
-    Godzina:<br>
-    <input type="time" v-model="reservation.time">
-    <br>
-    Czas trwania:<br>
-    <input type="number" min="1" v-model="reservation.duration">min
-    <br><br>
-    <div v-if="tables.length">
-      <div v-for="table in tables" :key="table.table_id">
-        <input type="radio" name="table" :value="key">
-        liczba miejsc: {{ table.number_of_sits }}
-      </div>
-      <br>
+    <time-form
+    v-if="stage===1"
+    v-bind:timeObject="timeObject"
+    @timeFilled="proceedToTables"/>
+    <table-form
+    v-if="stage===2"
+    inputType="radio"
+    v-bind:tables="tables"
+    @tablesFilled="proceedToSubmit($event)"
+    @goBack="stage--"/>
+    <div v-if="stage===3">
+      <li>Kiedy: {{ reservation.date }}, {{ reservation.time }}</li>
+      <li>Jak długo: {{ reservation.duration }}</li>
+      <li>Liczba miejsc: {{ reservation.numberOfSits }}</li>
+      <br><br>
+      <button @click="stage--">wstecz</button>
       <input type="submit" :value="btnText">
     </div>
     <p v-if="statusMsg">{{ statusMsg }}</p>
@@ -22,65 +23,58 @@
 </template>
 
 <script>
+import TimeForm from '@/components/TimeForm.vue'
+import TableForm from '@/components/TableForm.vue'
 import {HTTP} from '@/http-common';
-import { debounce } from "lodash";
 
 export default {
   name: 'reservationForm',
+  components: {
+    'time-form': TimeForm,
+    'table-form': TableForm
+  },
   props: [
     'reservation',
     'btnText'
   ],
   data () {
     return {
+      stage: 1,
+      timeObject: {
+        duration: this.reservation.duration,
+        date: this.reservation.date,
+        time: this.reservation.time
+      },
       tables: [],
       statusMsg: ''
     }
   },
-  watch: {
-    reservation: function () {
-      this.debouncedGetTables()
-    }
-  },
-  created: function () {
-    this.debouncedGetTables = debounce(this.getTables, 500)
-  },
   methods: {
-    onSubmitButtonClicked: function () {
-      if(this.reservation.tableId === null){
-        this.statusMsg = "wybierz stolik"
-      }
-      else {
-        this.$emit('submit');
-      }
+    proceedToTables: function () {
+      this.reservation = { ...this.reservation, ...this.timeObject };
+      this.getTables();
+      this.stage = 2;
+    },
+    proceedToSubmit: function (pickedTable) {
+      this.reservation.numberOfSits = pickedTable.numberOfSits;
+      this.reservation.tableId = pickedTable.id;
+      this.stage = 3;
     },
     getTables: function () {
-      this.reservation.tableId = null // TODO TODO TODO
-      if(this.reservation.date !== "" && this.reservation.time !== ""){
-        let reservationTime = this.reservation.date + 'T' + this.reservation.time;
-
-        // HTTP.post(`tables/available-at`)
-        // .then(response => {
-        //   if(response.data){
-            this.tables = [
-              {
-                table_id: 1,
-                number_of_sits: 4
-              },
-              {
-                table_id: 2,
-                number_of_sits: 2
-              }
-            ]
-            if(this.tables === []){
-              this.statusMsg = "brak stolików w podanym terminie"
-            }
-        //   }
-        // })
-        // .catch(e => {
-        //   this.statusMsg = e
-        // })
-      }
+      //TODO: errorMessage
+      HTTP.post(`tables/available-at`, this.timeObject)
+      .then(response => {
+        if(response.data){
+          this.tables = response.data
+        }
+      })
+      .catch(() => {
+        this.statusMsg = "wystąpił błąd"
+      })
+    },
+    onSubmitButtonClicked: function () {
+      this.stage = 1;
+      this.$emit('submit', this.reservation);
     }
   }
 }

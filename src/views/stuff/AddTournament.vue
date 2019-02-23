@@ -20,10 +20,10 @@ export default {
     return {
       tournament: {
         gameId: null,
+        startTime: null,
         duration: 10,
         date: null,
         time: null,
-        startTime: null,
         tableIds: [],
         copyIds: []
       },

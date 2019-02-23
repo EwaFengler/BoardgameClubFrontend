@@ -9,9 +9,9 @@
         <ul>
           <li>Kiedy: {{ tournament.dateObj.toLocaleString() }}</li>
           <li>Jak długo: {{ tournament.duration }}min</li>
-          <!-- <li>W co: {{ tournament.gameName }}</li> -->
+          <li>W co: {{ tournament.readOnlyGameName }}</li>
           <li>Maksymalna liczba graczy: {{ tournament.maxPlayers }}</li>
-          <!-- <li>Zapisanych graczy: {{ tournament.no_of_players }}</li> -->
+          <li>Zapisanych graczy: {{ tournament.readOnlyPlayersNumber }}</li>
           <li>
             <router-link :to="{ name: 'editTournament', params: { 'tournamentId': tournament.id} }">
               <button>Edytuj</button>

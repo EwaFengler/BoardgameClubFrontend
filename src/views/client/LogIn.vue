@@ -20,19 +20,25 @@ export default {
   },
   methods: {
     onLogInButtonClicked: function () {
-      HTTP.post(`clients/get-by-email`, { email: this.email })
+      HTTP.post(`clients/get-by-email`, { value: this.email })
       .then(response => {
-        if(response.data && response.data.id){
-          this.$router.push({ path: `/client/${response.data.id}` })
+        console.log(response)
+        if(response.data){
+          if(response.data.errorMessage === null){
+            this.$router.push({ path: `/client/${response.data.id}` })
+          }
+          else {
+            this.errorMsg = response.data.errorMessage
+          }
         }
         else {
           this.errorMsg = "brak użytkownika o podanym emailu"
         }
-      })
-      .catch(() => {
-        this.errorMsg = "wystąpił błąd"
-      })
-    }
+    })
+    .catch(() => {
+      this.errorMsg = "wystąpił błąd"
+    })
   }
+}
 }
 </script>
