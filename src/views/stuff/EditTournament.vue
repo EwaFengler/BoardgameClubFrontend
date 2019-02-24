@@ -1,9 +1,9 @@
 <template>
   <div>
     <tournament-form
-    v-bind:tournament='tournament'
+    v-bind:tournament="tournament"
     btnText="Zapisz"
-    @submit="updateTournament"/>
+    @submit="updateTournament($event)"/>
     <p v-if="statusMsg">{{ statusMsg }}</p>
   </div>
 </template>
@@ -33,13 +33,20 @@ export default {
         this.tournament.time = this.tournament.dateObj.toISOString().substr(11, 5);
       }
     })
-    .catch(e => {
+    .catch(() => {
       this.statusMsg = "wystąpił błąd"
     })
   },
   methods: {
-    updateTournament: function () {
-      this.statusMsg = "zapisano turniej"
+    updateTournament: function (tournament) {
+      // TODO: errorMessage
+      HTTP.put(`tournaments`, tournament)
+      .then(() => {
+        this.statusMsg = "zapisano turniej"
+      })
+      .catch(() => {
+        this.statusMsg = "wystąpił błąd"
+      })
     }
   }
 }

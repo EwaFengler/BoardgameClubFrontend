@@ -39,10 +39,15 @@ export default {
     HTTP.get(`clients/${this.$route.params.clientId}/rentals`)
     .then(response => {
       if(response.data){
-        this.rentals = response.data
-        this.rentals.forEach(e => {
-          e.dateObj = new Date(e.startTime)
-        })
+        if(response.data.errorMessage === null){
+          this.rentals = response.data.values
+          this.rentals.forEach(e => {
+            e.dateObj = new Date(e.startTime)
+          })
+        }
+        else {
+          this.statusMsg = response.data.errorMessage
+        }
       }
     })
     .catch(() => {
@@ -51,18 +56,17 @@ export default {
   },
   methods: {
     deleteRental: function (rental) {
-      // TODO: errorMessage
       HTTP.delete(`private_rentals/${rental.id}`)
       .then(response => {
-        // if(response.data){
-        //   if(response.data.errorMessage == ""){
+        if(response.data){
+          if(response.data.errorMessage === null){
             this.rentals.splice(this.rentals.indexOf(rental), 1);
             this.statusMsg = "anulowano wypożyczenie"
-        //   }
-        //   else {
-        //     this.statusMsg = response.data.errorMessage
-        //   }
-        // }
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
       })
       .catch(() => {
         this.statusMsg = "wystąpił błąd"

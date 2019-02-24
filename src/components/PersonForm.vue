@@ -38,7 +38,7 @@ export default {
       if(this.person.surname === ""){
         this.statusMsgs.push("nazwisko nie może być puste");
       }
-      if(this.person.email === ""){ //TODO lepsza walidacja maila
+      if(this.person.email === ""){
         this.statusMsgs.push("email nie może być pusty");
       }
       if(this.person.phoneNumber === ""){

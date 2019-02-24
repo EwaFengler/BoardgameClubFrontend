@@ -37,7 +37,7 @@ export default {
       .then(() => {
         this.statusMsg = "pomyślnie dodano grę";
       })
-      .catch(e => {
+      .catch(() => {
         this.statusMsg = "wystąpił błąd"
       })
     }

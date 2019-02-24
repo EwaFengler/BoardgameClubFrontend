@@ -3,14 +3,14 @@
     <rental-form
     v-bind:rental="rental"
     btnText="Wypożycz grę"
-    @submit="addRental"/>
+    @submit="addRental($event)"/>
     <p v-if="statusMsg">{{ statusMsg }}</p>
   </div>
 </template>
 
 <script>
 import RentalForm from '@/components/RentalForm.vue';
-import {HTTP} from '@/http-common'; 
+import {HTTP} from '@/http-common';
 
 export default {
   name: 'rentGame',
@@ -19,37 +19,29 @@ export default {
   },
   data () {
     return {
-      rental: { // TODO - razie potrzeby dostosować pola
+      rental: {
         clientId: this.$route.params.clientId,
-        copyId: null,
-        duration: 1,
+        startTime: null,
+        duration: 60,
         date: null,
         time: null,
-        rentalTime: ''
+        copyId: null
       },
       statusMsg: ''
     }
   },
   methods: {
-    addRental: function () {
-      // TODO: po dodaniu informacji o błędzie:
-      // - odkomentowanie ifa
-      // - dostosowanie nazwy zmiennej jeżeli to nie jest "errorMessage"
-      // - jeżeli nie działa dla czegoś, co powoduje błąd - np. dla próby wypożyczenia niedostępnego egzemplarza
-      // zakomentować ifa, w miejscu ifa wyświetlić response w konsoli przeglądarki:
-      // console.log(response)
-      // i odpowiednio zmienić nazwę zmiennej lub naprawić backend.
-      // INFO: nie dało się sprawdzić endpointa
-      HTTP.post(`private_rentals`, this.rental)
+    addRental: function (rental) {
+      HTTP.post(`private_rentals`, rental)
       .then(response => {
-        // if(response.data){
-        //   if (response.data.errorMessage) {
+        if(response.data){
+          if (response.data.errorMessage === null) {
             this.statusMsg = "pomyślnie wypożyczono grę"
-        //   }
-        //   else {
-        //     this.statusMsg = response.data.errorMessage
-        //   }
-        // }
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
       })
       .catch(() => {
         this.statusMsg = "wystąpił błąd"

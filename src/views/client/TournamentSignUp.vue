@@ -36,23 +36,18 @@ export default {
   methods: {
     onSubmitButtonClicked: function () {
       if (this.entry.tournamentId !== null) {
-        // TODO: po dodaniu informacji o błędzie:
-        // - odkomentowanie ifa
-        // - dostosowanie nazwy zmiennej jeżeli to nie jest "errorMessage"
-        // - jeżeli nie działa dla czegoś, co powoduje błąd - np. próba dołączenia do usuniętego turnieju,
-        // zakomentować ifa, w miejscu ifa wyświetlić response w konsoli przeglądarki:
-        // console.log(response)
-        // i odpowiednio zmienić nazwę zmiennej lub naprawić backend.
-        // INFO: w momencie pisania endpoint nie działał. Zakładam, że wejście to post ze strukturą {clientId, tournamentId}
         HTTP.post(`tournament_participants`, this.entry)
         .then(response => {
-          // if (response.data) {
-          //   if(response.data.errorMessage != ""){
+          if (response.data) {
+            if(response.data.errorMessage === null){
               this.entry.tournamentId = null;
               this.getAvailableTournaments(this.$route.params.clientId);
               this.statusMsg = "pomyślnie zapisano się na turniej";
-          //   }
-          // }
+            }
+            else {
+              this.statusMsg = response.data.errorMessage
+            }
+          }
         })
         .catch(() => {
           this.statusMsg = "wystąpił błąd"
@@ -66,10 +61,15 @@ export default {
       HTTP.get(`clients/${clientId}/available-tournaments`)
       .then(response => {
         if(response.data){
-          this.tournaments = response.data
-          this.tournaments.forEach(e => {
-            e.dateObj = new Date(e.tournamentDTO.startTime)
-          })
+          if(response.data.errorMessage === null){
+            this.tournaments = response.data.values
+            this.tournaments.forEach(e => {
+              e.dateObj = new Date(e.tournamentDTO.startTime)
+            })
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
         }
       })
       .catch(() => {

@@ -3,7 +3,7 @@
     <reservation-form
     v-bind:reservation="reservation"
     btnText="Zapisz"
-    @submit="udpateReservation"/>
+    @submit="updateReservation($event)"/>
     <p v-if="statusMsg">{{ statusMsg }}</p>
   </div>
 </template>
@@ -26,11 +26,15 @@ export default {
   mounted: function () {
     HTTP.get(`private_reservations/${this.$route.params.reservationId}`)
     .then(response => {
-      if(response.data){
-        this.reservation = response.data;
-        console.log(this.reservation);
-        this.reservation.date = this.reservation.startTime.substr(0, 10);
-        this.reservation.time = this.reservation.startTime.substr(11, 5);
+      if (response.data) {
+        if (response.data.errorMessage === null) {
+          this.reservation = response.data;
+          this.reservation.date = this.reservation.startTime.substr(0, 10);
+          this.reservation.time = this.reservation.startTime.substr(11, 5);
+        }
+        else {
+          this.statusMsg = response.data.errorMessage
+        }
       }
     })
     .catch(() => {
@@ -38,11 +42,11 @@ export default {
     })
   },
   methods: {
-    udpateReservation: function () {
+    updateReservation: function (reservation) {
       // TODO: errorMessage
-      HTTP.put(`private_reservations`, this.reservation)
+      HTTP.put(`private_reservations`, reservation)
       .then(() => {
-        this.statusMsg = "pomyślnie zmieniono rezerwację";
+        this.statusMsg = "pomyślnie zmieniono rezerwację"
       })
       .catch(() => {
         this.statusMsg = "wystąpił błąd"

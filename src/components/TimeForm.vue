@@ -1,13 +1,13 @@
 <template>
   <form>
     Data:<br>
-    <input type="date" v-model="timeObject.date">
+    <input type="date" v-model="localTimeObject.date">
     <br>
     Godzina:<br>
-    <input type="time" v-model="timeObject.time">
+    <input type="time" v-model="localTimeObject.time">
     <br>
     Jak długo:<br>
-    <input type="number" min="1" v-model="timeObject.duration">min
+    <input type="number" min="1" v-model="localTimeObject.duration">min
     <br><br>
     <button @click="proceed">dalej</button>
     <p v-for="statusMsg in statusMsgs">{{ statusMsg }}</p>
@@ -23,26 +23,29 @@ export default {
   ],
   data () {
     return {
+      localTimeObject: {
+        ...this.timeObject
+      },
       statusMsgs: []
     }
   },
   methods: {
     proceed: function () {
       this.statusMsgs = [];
-      if(this.timeObject.date == null){
+      if(this.localTimeObject.date == null){
         this.statusMsgs.push("wybierz datę");
       }
-      if(this.timeObject.time == null){
+      if(this.localTimeObject.time == null){
         this.statusMsgs.push("wybierz godzinę");
       }
-      if(this.timeObject.duration <= 0){
+      if(this.localTimeObject.duration <= 0){
         this.statusMsgs.push("czas trwania turnieju powinien być dodatni");
       }
       if(this.statusMsgs.length === 0){
-        this.timeObject.startTime = this.timeObject.date + 'T' + this.timeObject.time;
-        this.$emit('timeFilled');
+        this.localTimeObject.startTime = this.localTimeObject.date + 'T' + this.localTimeObject.time;
+        this.$emit('timeFilled', this.localTimeObject);
       }
-    },
+    }
   }
 }
 </script>

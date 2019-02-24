@@ -31,27 +31,20 @@ export default {
   },
   methods: {
     register: function () {
-      // TODO: po dodaniu informacji o błędzie:
-      // - odkomentowanie ifa
-      // - dostosowanie nazwy zmiennej jeżeli to nie jest "errorMessage"
-      // - jeżeli nie działa dla czegoś, co powoduje błąd - np. nieunikatowego emaila,
-      // zakomentować ifa, w miejscu ifa wyświetlić response w konsoli przeglądarki:
-      // console.log(response)
-      // i odpowiednio zmienić nazwę zmiennej lub naprawić backend.
       HTTP.post(`clients`, this.person)
       .then(response => {
         if(response.data){
-          // if(response.data.errorMessage == ""){
+          if(response.data.errorMessage === null){
             if(response.data.id){
               this.$router.push({ path: `/client/${response.data.id}` })
             }
             else {
               this.errorMsg = "wystąpił błąd"
             }
-          // }
-          // else {
-          //   this.errorMsg = response.data.errorMessage
-          // }          
+          }
+          else {
+            this.errorMsg = response.data.errorMessage
+          }          
         }
       })
       .catch(() => {

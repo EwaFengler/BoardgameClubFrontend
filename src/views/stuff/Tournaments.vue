@@ -40,13 +40,18 @@ export default {
     HTTP.get(`tournaments`)
     .then(response => {
       if(response.data){
-        this.tournaments = response.data
-        this.tournaments.forEach((e) => {
-          e.dateObj = new Date(e.startTime)
-        })
+        if(response.data.errorMessage === null){
+          this.tournaments = response.data.values
+          this.tournaments.forEach(t => {
+            t.dateObj = new Date(t.startTime)
+          })
+        }
+        else {
+          this.statusMsg = response.data.errorMessage
+        }
       }
     })
-    .catch(e => {
+    .catch(() => {
       this.statusMsg = "wystąpił błąd"
     })
   },
@@ -58,7 +63,7 @@ export default {
         this.tournaments.splice(this.tournaments.indexOf(tournament), 1);
         this.statusMsg = "pomyślnie usunięto turniej";
       })
-      .catch(e => {
+      .catch(() => {
         this.statusMsg = "wystąpił błąd"
       })
     }

@@ -34,7 +34,7 @@ export default {
         this.tables = response.data
       }
     })
-    .catch(e => {
+    .catch(() => {
       this.statusMsg = "wystąpił błąd"
     })
   },
@@ -46,7 +46,7 @@ export default {
         this.tables.splice(this.tables.indexOf(table), 1);
         this.statusMsg = "pomyślnie usunięto stolik";
       })
-      .catch(e => {
+      .catch(() => {
         this.statusMsg = "wystąpił błąd"
       })
     }

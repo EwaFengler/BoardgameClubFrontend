@@ -1,15 +1,16 @@
 <template>
   <div>
     <tournament-form
-    v-bind:tournament='tournament'
+    :tournament="tournament"
     btnText="Dodaj turniej"
-    @submit="addTournament"/>
+    @submit="addTournament($event)"/>
     <p v-if="statusMsg">{{ statusMsg }}</p>
   </div>
 </template>
 
 <script>
 import TournamentForm from '@/components/TournamentForm.vue';
+import {HTTP} from '@/http-common';
 
 export default {
   name: 'addTournament',
@@ -21,7 +22,7 @@ export default {
       tournament: {
         gameId: null,
         startTime: null,
-        duration: 10,
+        duration: 60,
         date: null,
         time: null,
         tableIds: [],
@@ -31,8 +32,21 @@ export default {
     }
   },
   methods: {
-    addTournament: function () {
-      this.statusMsg = "dodano turniej"
+    addTournament: function (tournament) {
+      HTTP.post(`tournaments`, tournament)
+      .then(response => {
+        if(response.data){
+          if(response.data.errorMessage === null){
+            this.statusMsg = "dodano turniej"
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
+      })
+      .catch(() => {
+        this.statusMsg = "wystąpił błąd"
+      })
     }
   }
 }

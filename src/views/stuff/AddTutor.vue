@@ -48,7 +48,7 @@ export default {
         //   }
         // }
       })
-      .catch(e => {
+      .catch(() => {
         this.statusMsg = "wystąpił błąd"
       })
     }

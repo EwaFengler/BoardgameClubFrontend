@@ -9,8 +9,8 @@
           <li>Kiedy: {{ r.dateObj.toLocaleString() }}</li>
           <li>Jak długo: {{ r.privateReservation.duration }}</li>
           <li>Liczba miejsc: {{ r.numberOfSits }}</li>
-          <li v-if="r.privateReservation.tutorId === null">Brak instruktora</li>
-          <li v-else>Instruktor: {{ r.privateReservation.tutor }}</li>
+          <li v-if="r.privateReservation.tutor === null">Brak instruktora</li>
+          <li v-else>Instruktor: {{ r.tutor.name }} {{ r.tutor.surname }}</li>
           <li>
             <router-link :to="{ name: 'editReservation', params: { 'reservationId': r.privateReservation.id } }">
               <button>Edytuj</button>
@@ -41,28 +41,46 @@ export default {
     HTTP.get(`clients/${this.$route.params.clientId}/reservations`)
     .then(response => {
       if(response.data) {
-        this.reservations = response.data
-        this.reservations.forEach(r => {
-          r.dateObj = new Date(r.privateReservation.startTime)
+        if(response.data.errorMessage === null){
+          this.reservations = response.data.values
+          this.reservations.forEach(r => {
+            r.dateObj = new Date(r.privateReservation.startTime)
+            this.reservation.tutor = this.reservation.tutorId ? this.getTutorById(this.reservation.tutorId) : null
         })
       }
+      else {
+        this.statusMsg = response.data.errorMessage
+      }
+    }
+  })
+  .catch(() => {
+    this.statusMsg = "wystąpił błąd"
+  })
+},
+methods: {
+  cancelReservation: function (reservation) {
+    HTTP.delete(`private_reservations/${reservation.privateReservation.id}`)
+    .then(() => {
+      this.reservations.splice(this.reservations.indexOf(reservation), 1);
+      this.statusMsg = "anulowano rezerwację"
     })
     .catch(() => {
       this.statusMsg = "wystąpił błąd"
     })
-  },
-  methods: {
-    cancelReservation: function (reservation) {
-      //TODO: errorMessage
-      HTTP.delete(`private_reservations/${reservation.privateReservation.id}`)
-      .then(() => {
-        this.reservations.splice(this.reservations.indexOf(reservation), 1);
-        this.statusMsg = "anulowano rezerwację"
-      })
-      .catch(() => {
-        this.statusMsg = "wystąpił błąd"
-      })
-    }
   }
+},
+getTutorById: function (tutorId) {
+  HTTP.get(`tutors/${tutorId}/`)
+  .then(response => {
+    if(response.data && response.data.errorMessage) {
+      return response.data
+    }
+    return null
+  })
+  .catch(() => {
+    this.statusMsg = "wystąpił błąd przy ładowaniu instruktorów"
+    return null
+  })
+}
 }
 </script>

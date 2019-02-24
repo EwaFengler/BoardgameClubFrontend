@@ -35,10 +35,15 @@ export default {
     HTTP.get(`clients/${this.$route.params.clientId}/participated-tournaments`)
     .then(response => {
       if(response.data){
-        this.tournaments = response.data
-        this.tournaments.forEach((e) => {
-          e.dateObj = new Date(e.tournamentDTO.startTime)
-        })
+        if(response.data.errorMessage === null){
+          this.tournaments = response.data.values
+          this.tournaments.forEach(t => {
+            t.dateObj = new Date(t.tournamentDTO.startTime)
+          })
+        }
+        else {
+          this.statusMsg = response.data.errorMessage
+        }
       }
     })
     .catch (() => {
@@ -47,24 +52,10 @@ export default {
   },
   methods: {
     leaveTournament: function (tnmnt) {
-      // TODO: po dodaniu informacji o błędzie:
-      // - odkomentowanie ifa
-      // - dostosowanie nazwy zmiennej jeżeli to nie jest "errorMessage"
-      // - jeżeli nie działa dla czegoś, co powoduje błąd - np. już usuniętego uczestnictwa,
-      // zakomentować ifa, w miejscu ifa wyświetlić response w konsoli przeglądarki:
-      // console.log(response)
-      // i odpowiednio zmienić nazwę zmiennej lub naprawić backend.
       HTTP.delete(`tournament_participants/${this.$route.params.clientId}/${tnmnt.tournamentDTO.id}`)
-      .then (response => {
-        // if (response.data) {
-        //   if(response.data.errorMessage == ""){
-            this.tournaments.splice(this.tournaments.indexOf(tnmnt), 1);
-            this.statusMsg = "zrezygnowano z uczestnictwa w turnieju"
-        //   }
-        //   else {
-        //     this.statusMsg = response.data.errorMessage
-        //   }
-        // }
+      .then (() => {
+        this.tournaments.splice(this.tournaments.indexOf(tnmnt), 1);
+        this.statusMsg = "zrezygnowano z uczestnictwa w turnieju"
       })
       .catch (() => {
         this.statusMsg = "wystąpił błąd"

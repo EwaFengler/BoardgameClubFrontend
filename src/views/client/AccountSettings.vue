@@ -25,17 +25,15 @@ export default {
     }
   },
   mounted: function () {
-    // TODO: po dodaniu informacji o błędzie:
-    // - odkomentowanie ifa (pacz niżej)
     HTTP.get(`clients/${this.$route.params.clientId}`)
     .then(response => {
       if (response.data) {
-        // if (response.data.errorMessage == "") {
+        if (response.data.errorMessage === null) {
           this.client = response.data;
-        // }
-        // else {
-        //   this.errorMsg = response.data.errorMessage
-        // }
+        }
+        else {
+          this.statusMsg = response.data.errorMessage
+        }
       }
     })
     .catch(() => {
@@ -44,22 +42,15 @@ export default {
   },
   methods: {
     updateAccount: function () {
-      // TODO: po dodaniu informacji o błędzie:
-      // - odkomentowanie ifa
-      // - dostosowanie nazwy zmiennej jeżeli to nie jest "errorMessage"
-      // - jeżeli nie działa dla czegoś, co powoduje błąd - np. nieunikatowego emaila,
-      // zakomentować ifa, w miejscu ifa wyświetlić response w konsoli przeglądarki:
-      // console.log(response)
-      // i odpowiednio zmienić nazwę zmiennej lub naprawić backend.
       HTTP.put(`clients`, this.client)
       .then(response => {
         if (response.data) {
-          // if (response.data.errorMessage == "") {
+          if (response.data.errorMessage === null) {
             this.statusMsg = "Pomyślnie zmieniono ustawienia"
-          // }
-          // else {
-          //   this.errorMsg = response.data.errorMessage
-          // }
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
         }
       })
       .catch(() => {
@@ -68,18 +59,8 @@ export default {
     },
     deleteAccount: function () {
       HTTP.delete(`clients/${this.$route.params.clientId}`)
-      .then(response => {
-        // TODO: po dodaniu informacji o błędzie:
-        // - odkomentować j/w
-        // - przykładowy błąd: konto już zostało usunięte
-        // if (response.data) {
-          // if (response.data.errorMessage == "") {
-            this.$router.push({ path: `/account-removed` })
-          // }
-          // else {
-          //   this.errorMsg = response.data.errorMessage
-          // }
-        // }
+      .then(() => {
+        this.$router.push({ path: `/account-removed` })
       })
       .catch(() => {
         this.statusMsg = "wystąpił błąd"

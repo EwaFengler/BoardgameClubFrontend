@@ -2,8 +2,8 @@
   <div>
     <div v-for="game in games" :key="game.game.id" v-if="game.availableCopies">
       <input type="radio" name="game"
-      :value="game.game.id"
-      v-model="pickedGame">
+      :value="game.game"
+      v-model="selectedGame">
       <ul>
         <li>Nazwa: {{ game.game.name }}</li>
         <li>Wydawca: {{ game.game.publisher }}</li>
@@ -28,22 +28,23 @@
 export default {
   name: 'tournamentTime',
   props: [
-    'games'
+    'games',
+    'currentGame'
   ],
   data () {
     return {
-      pickedGame: null,
+      selectedGame: this.currentGame,
       statusMsg: ""
     }
   },
   methods: {
     proceed: function () {
-      if(this.pickedGame === null){
+      if(this.selectedGame === null){
         this.statusMsg = "wybierz grę";
       }
       else {
         this.statusMsg = "";
-        this.$emit('gamePicked', this.pickedGame);
+        this.$emit('gameSelected', this.selectedGame);
       }
     }
   }
