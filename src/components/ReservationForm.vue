@@ -2,12 +2,12 @@
   <div>
     <time-form v-if="stage===1"
     :timeObject="timeObject"
-    @timeFilled="proceedToTables($event); stage++"/>
+    @timeFilled="proceedToTables($event)"/>
     <table-form v-if="stage===2"
     inputType="radio"
     v-bind:tables="tables"
     v-bind:currentTables="currentTable"
-    @tablesSelected="proceedToTutor($event); stage++"
+    @tablesSelected="proceedToTutor($event)"
     @goBack="stage--"/>
     <tutor-form v-if="stage===3"
     v-bind:tutors="tutors"
@@ -53,29 +53,28 @@ export default {
         date: this.reservation.date,
         time: this.reservation.time
       },
+      timeChanged: false,
+      currentTable: null,
+      currentTutor: null,
       tables: [],
       tutors: [],
       statusMsg: ''
     }
   },
-  computed: {
-    currentTable: function () {
-      return this.reservation.tableId ? this.getCurrentTable() : null;
-    },
-    currentTutor: function () {
-      return this.reservation.tutorId ? this.getCurrentTutor() : null;
-    }
-  },
   methods: {
     proceedToTables: function (timeObject) {
       this.localReservation = { ...this.localReservation, ...timeObject };
+      this.timeChanged = this.hasTimeChanged(this.reservation, timeObject);
       this.timeObject = timeObject;
-      this.getTables();
+      this.getCurrentTable()
+      .then(() => { this.getCurrentTutor() })
+      .then(() => { this.getTables() })
+      .then(() => {this.stage++});
     },
     proceedToTutor: function (pickedTable) {
       this.localReservation.numberOfSits = pickedTable.numberOfSits;
       this.localReservation.tableId = pickedTable.id;
-      this.getTutors();
+      this.getTutors().then(() => {this.stage++});
     },
     proceedToSubmit: function (pickedTutor) {
       this.localReservation.tutorId = pickedTutor.id;
@@ -83,7 +82,7 @@ export default {
       this.localReservation.tutorSurname = pickedTutor.surname;
     },
     getTables: function () {
-      HTTP.post(`tables/available-at`, this.timeObject)
+      return HTTP.post(`tables/available-at`, this.timeObject)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
           this.tables = response.data.values
@@ -97,18 +96,25 @@ export default {
       })
     },
     getTutors: function () {
-      HTTP.post(`private_reservations/available-tutors-at`, this.timeObject)
+      return HTTP.post(`private_reservations/available-tutors-at`, this.timeObject)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
           this.tutors = response.data.values
+          if(this.currentTutor) {
+            this.tutors = [this.currentTutor, ...this.tutors]
+          }
         }
       })
-      .catch(response => {
+      .catch(() => {
         this.statusMsg = "wystąpił błąd"
       })
     },
-    getCurrentTable: function () {
-      HTTP.get(`tables/${this.reservation.tableId}`)
+    getCurrentTable: async function () {
+      if(this.timeChanged){
+        this.currentTable = null;
+        return;
+      }
+      return HTTP.get(`tables/${this.reservation.tableId}`)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
           this.currentTable = response.data
@@ -118,8 +124,12 @@ export default {
         this.statusMsg = "wystąpił błąd"
       })
     },
-    getCurrentTutor: function () {
-      HTTP.get(`tutors/${this.reservation.tutorId}`)
+    getCurrentTutor: async function () {
+      if(this.timeChanged){
+        this.currentTutor = null;
+        return;
+      }
+      return HTTP.get(`tutors/${this.reservation.tutorId}`)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
           this.currentTutor = response.data
@@ -128,6 +138,9 @@ export default {
       .catch(() => {
         this.statusMsg = "wystąpił błąd"
       })
+    },
+    hasTimeChanged: function (r, to) {
+      return r.date != to.date || r.time != to.time || r.duration != to.duration
     }
   }
 }

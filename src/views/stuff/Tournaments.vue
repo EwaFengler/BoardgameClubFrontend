@@ -56,7 +56,6 @@ export default {
     })
   },
   methods: {
-    //TODO: errorMessage
     deleteTournament: function (tournament) {
       HTTP.delete(`tournaments/${tournament.id}`)
       .then(() => {

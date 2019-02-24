@@ -17,7 +17,7 @@
     <tournament-copies v-if="stage===4"
     v-bind:copies="gameCopies"
     v-bind:currentCopies="currentCopies"
-    @copiesPicked="proceedToSubmit($event); stage++"
+    @copiesSelected="proceedToSubmit($event); stage++"
     @goBack="stage--"/>
     <tournament-summary v-if="stage===5"
     :tournament="localTournament"
@@ -61,7 +61,7 @@ export default {
       },
       tables: [],
       games: [],
-      pickedGame: null,
+      selectedGame: null,
       statusMsgs: [] //TODO
     }
   },
@@ -76,11 +76,11 @@ export default {
       return this.getCurrentCopies();
     },
     gameCopies: function () {
-      let copies = this.games.find(g => { g.game.id == this.pickedGame.id }).gameCopies;
+      let copies = this.games.find(g => { g.game.id == this.selectedGame.id }).gameCopies;
       if(this.selectedGame.id == this.tournament.gameId){
         copies = [...this.currentCopies, ...copies];
       }
-      return copies
+      return copies;
     }
   },
   methods: {
@@ -89,19 +89,20 @@ export default {
       this.timeObject = timeObject;
       this.getTables();
     },
-    proceedToGame: function (pickedTables) {
-      this.localTournament.numberOfSits = pickedTables.map(t => t.numberOfSits).reduce((acc, b) => acc + b);
-      this.localTournament.tableIds = pickedTables.map(t => t.id);
+    proceedToGame: function (selectedTables) {
+      this.localTournament.numberOfSits = selectedTables.map(t => t.numberOfSits).reduce((acc, b) => acc + b);
+      this.localTournament.tableIds = selectedTables.map(t => t.id);
       this.getGames();
     },
-    proceedToCopies: function (pickedGame) {
-      this.pickedGame = pickedGame;
-      this.localTournament.gameId = pickedGame.id;
+    proceedToCopies: function (selectedGame) {
+      this.selectedGame = selectedGame;
+      this.localTournament.gameId = selectedGame.id;
+      this.localTournament.gameName = selectedGame.name;
     },
-    proceedToSubmit: function (pickedCopies) {
-      this.localTournament.copyIds = pickedCopies;
+    proceedToSubmit: function (selectedCopies) {
+      this.localTournament.copyIds = selectedCopies;
       this.localTournament.maxPlayers = Math.min(this.localTournament.numberOfSits,
-        this.pickedGame.maxPlayers * pickedCopies.length);
+        this.selectedGame.maxPlayers * selectedCopies.length);
     },
     getTables: function () {
       HTTP.post(`tables/available-at`, this.timeObject)

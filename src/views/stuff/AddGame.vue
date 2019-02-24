@@ -24,7 +24,7 @@ export default {
         publisher: '',
         minPlayers: 1,
         maxPlayers: 1,
-        avgTime: 10,
+        avgTime: 60,
         description: ''
       },
       statusMsg: ''
@@ -32,10 +32,16 @@ export default {
   },
   methods: {
     addGame: function () {
-      //TODO: error errorMessage
       HTTP.post(`games`, this.game)
-      .then(() => {
-        this.statusMsg = "pomyślnie dodano grę";
+      .then(response => {
+        if(response.data){
+          if(response.data.errorMessage === null){
+            this.statusMsg = "pomyślnie dodano grę";
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
       })
       .catch(() => {
         this.statusMsg = "wystąpił błąd"

@@ -34,7 +34,7 @@ export default {
         .then(() => {
           this.statusMsg = "pomyślnie dodano stolik"
         })
-        .catch(e => {
+        .catch(() => {
           this.statusMsg = "wystąpił błąd"
         })
       }

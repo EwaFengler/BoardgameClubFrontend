@@ -27,21 +27,33 @@ export default {
     HTTP.get(`games/${this.$route.params.gameId}`)
     .then(response => {
       if(response.data){
-        this.game = response.data;
+        if(response.data.errorMessage === null){
+          this.game = response.data;
+        }
+        else {
+          this.statusMsg = response.data.errorMessage
+        }
       }
     })
-    .catch(e => {
-      this.statusMsg = e // TODO - ludzki błąd
+    .catch(() => {
+      this.statusMsg = "wystąpił błąd"
     })
   },
   methods: {
     updateGame: function () {
       HTTP.put(`games`, this.game)
-      .then(() => {
-        this.statusMsg = "pomyślnie zmieniono dane gry"
+      .then(response => {
+        if(response.data){
+          if(response.data.errorMessage === null){
+            this.statusMsg = "pomyślnie zmieniono dane gry"
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
       })
-      .catch(e => {
-        this.statusMsg = e // TODO - ludzki błąd
+      .catch(() => {
+        this.statusMsg = "wystąpił błąd"
       })
     }
   }

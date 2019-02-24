@@ -5,13 +5,14 @@
     @timeFilled="proceedToGame($event); stage++"/>
     <game-form v-if="stage===2"
     v-bind:games="games"
+    v-bind:currentGame="currentGame"
     @gameSelected="proceedToSubmit($event); stage++"
     @goBack="stage--"/>
-    <!-- <rental-summary v-if="stage===3"
+    <rental-summary v-if="stage===3"
     :rental="localRental"
     :btnText="btnText"
     @submit="$emit('submit', localRental); stage = 1"
-    @goBack="stage--"/> -->
+    @goBack="stage--"/>
     <p v-if="statusMsg">{{ statusMsg }}</p>
   </div>
 </template>
@@ -19,6 +20,7 @@
 <script>
 import TimeForm from '@/components/TimeForm.vue'
 import TournamentGame from '@/components/TournamentGame.vue'
+import RentalSummary from '@/components/RentalSummary.vue'
 import {HTTP} from '@/http-common'
 
 export default {
@@ -31,7 +33,7 @@ export default {
     'time-form': TimeForm,
     // 'game-form': GameForm,
     'game-form': TournamentGame,
-    // 'rental-summary': RentalSummary
+    'rental-summary': RentalSummary
   },
   data () {
     return {
@@ -48,7 +50,11 @@ export default {
       statusMsg: ''
     }
   },
-
+  computed: {
+    currentGame: function () {//TODO: gameId czy copyId?
+      return this.rental.copyId ? this.getCurrentGame() : null;
+    }
+  },
   methods: {
     proceedToGame: function (timeObject) {
       this.localRental = { ...this.localRental, ...timeObject };
@@ -68,6 +74,9 @@ export default {
       .catch(() => {
         this.statusMsg = "wystąpił błąd"
       })
+    },
+    getCurrentGame: function () {
+      return null //TODO: wciąż nie wiem, co chcę pokazać użytkownikowi
     }
   }
 }

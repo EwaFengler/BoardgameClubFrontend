@@ -5,28 +5,28 @@
     </router-link>
     <ul>
       <li v-for="game in games"
-        :key=" game.id">
-        <ul>
-          <li>Nazwa: {{ game.name }}</li>
-          <li>Wydawca: {{ game.publisher }}</li>
-          <li>Minimum graczy: {{ game.minPlayers }}</li>
-          <li>Maksimum graczy: {{ game.maxPlayers }}</li>
-          <li>Średni czas gry: {{ game.avgTime }}min</li>
-          <!-- <li>{{ game.number_of_copies }}</li> -->
-          <li v-if="game.description !== ''">
-            Opis: {{ game.description }}
-          </li>
-          <li>
-            <router-link :to="{ name: 'editGame', params: {'gameId': game.id}}">
-              <button>Edytuj</button>
-            </router-link>
-          </li>
-          <li><button @click="deleteGame(game)">Usuń</button></li>
-        </ul>
-      </li>
-    </ul>
-    <p v-if="statusMsg">{{ statusMsg }}</p>
-  </div>
+      :key=" game.id">
+      <ul>
+        <li>Nazwa: {{ game.name }}</li>
+        <li>Wydawca: {{ game.publisher }}</li>
+        <li>Minimum graczy: {{ game.minPlayers }}</li>
+        <li>Maksimum graczy: {{ game.maxPlayers }}</li>
+        <li>Średni czas gry: {{ game.avgTime }}min</li>
+        <!-- <li>{{ game.number_of_copies }}</li> -->
+        <li v-if="game.description !== ''">
+          Opis: {{ game.description }}
+        </li>
+        <li>
+          <router-link :to="{ name: 'editGame', params: {'gameId': game.id}}">
+            <button>Edytuj</button>
+          </router-link>
+        </li>
+        <li><button @click="deleteGame(game)">Usuń</button></li>
+      </ul>
+    </li>
+  </ul>
+  <p v-if="statusMsg">{{ statusMsg }}</p>
+</div>
 </template>
 
 <script>
@@ -44,7 +44,12 @@ export default {
     HTTP.get(`games`)
     .then(response => {
       if(response.data){
-        this.games = response.data
+        if(response.data.errorMessage === null){
+          this.games = response.data.values
+        }
+        else {
+          this.statusMsg = response.data.errorMessage
+        }
       }
     })
     .catch(() => {
@@ -52,7 +57,6 @@ export default {
     })
   },
   methods: {
-    //TODO: errorMessage
     deleteGame: function (game) {
       HTTP.delete(`games/${game.id}`)
       .then(() => {

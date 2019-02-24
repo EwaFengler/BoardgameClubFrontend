@@ -27,7 +27,12 @@ export default {
     HTTP.get(`tutors/${this.$route.params.tutorId}`)
     .then(response => {
       if(response.data){
-        this.tutor = response.data;
+        if(response.data.errorMessage === null){
+          this.tutor = response.data;
+        }
+        else {
+          this.statusMsg = response.data.errorMessage
+        }
       }
     })
     .catch(() => {
@@ -36,12 +41,18 @@ export default {
   },
   methods: {
     updateTutor: function () {
-      // TODO: errorMessage
       HTTP.put(`tutors`, this.tutor)
-      .then(() => {
-        this.statusMsg = "pomyślnie zmieniono dane instruktora"
+      .then(response => {
+        if(response.data){
+          if(response.data.errorMessage === null){
+            this.statusMsg = "pomyślnie zmieniono dane instruktora"
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
       })
-      .catch(e => {
+      .catch(() => {
         this.statusMsg = "wystąpił błąd"
       })
     }

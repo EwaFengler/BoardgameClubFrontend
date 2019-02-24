@@ -5,15 +5,15 @@
     </router-link>
     <ul>
       <li v-for="table in tables"
-        :key="table.table_id">
-        <ul>
-          <li>Liczba miejsc: {{ table.numberOfSits }}</li>
-          <li><button @click="deleteTable(table)">Usuń</button></li>
-        </ul>
-      </li>
-    </ul>
-    <p v-if="statusMsg">{{ statusMsg }}</p>
-  </div>
+      :key="table.table_id">
+      <ul>
+        <li>Liczba miejsc: {{ table.numberOfSits }}</li>
+        <li><button @click="deleteTable(table)">Usuń</button></li>
+      </ul>
+    </li>
+  </ul>
+  <p v-if="statusMsg">{{ statusMsg }}</p>
+</div>
 </template>
 
 <script>
@@ -30,8 +30,13 @@ export default {
   mounted: function () {
     HTTP.get(`tables`)
     .then(response => {
-      if(response.data){
-        this.tables = response.data
+      if(response.data) {
+        if(response.data.errorMessage === null) {
+          this.tables = response.data.values
+        }
+        else {
+          this.statusMsg = response.data.errorMessage
+        }
       }
     })
     .catch(() => {
@@ -40,7 +45,6 @@ export default {
   },
   methods: {
     deleteTable: function (table) {
-      // TODO: errorMessage
       HTTP.delete(`tables/${table.id}`)
       .then(() => {
         this.tables.splice(this.tables.indexOf(table), 1);

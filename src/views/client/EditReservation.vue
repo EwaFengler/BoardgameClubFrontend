@@ -1,7 +1,8 @@
 <template>
   <div>
     <reservation-form
-    v-bind:reservation="reservation"
+    v-if="!loadingData"
+    :reservation="reservation"
     btnText="Zapisz"
     @submit="updateReservation($event)"/>
     <p v-if="statusMsg">{{ statusMsg }}</p>
@@ -19,29 +20,33 @@ export default {
   },
   data () {
     return {
+      loadingData: true,
       reservation: {},
       statusMsg: ''
     }
   },
   mounted: function () {
-    HTTP.get(`private_reservations/${this.$route.params.reservationId}`)
-    .then(response => {
-      if (response.data) {
-        if (response.data.errorMessage === null) {
-          this.reservation = response.data;
-          this.reservation.date = this.reservation.startTime.substr(0, 10);
-          this.reservation.time = this.reservation.startTime.substr(11, 5);
-        }
-        else {
-          this.statusMsg = response.data.errorMessage
-        }
-      }
-    })
-    .catch(() => {
-      this.statusMsg = "wystąpił błąd"
-    })
+    this.getReservation().then(() => { this.loadingData = false });
   },
   methods: {
+    getReservation: function () {
+      return HTTP.get(`private_reservations/${this.$route.params.reservationId}`)
+      .then(response => {
+        if (response.data) {
+          if (response.data.errorMessage === null) {
+            this.reservation = response.data;
+            this.reservation.date = this.reservation.startTime.substr(0, 10);
+            this.reservation.time = this.reservation.startTime.substr(11, 5);
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
+      })
+      .catch(() => {
+        this.statusMsg = "wystąpił błąd"
+      })
+    },
     updateReservation: function (reservation) {
       // TODO: errorMessage
       HTTP.put(`private_reservations`, reservation)

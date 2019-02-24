@@ -30,23 +30,16 @@ export default {
   },
   methods: {
     createTutor: function () {
-      // TODO: po dodaniu informacji o błędzie:
-      // - odkomentowanie ifa
-      // - dostosowanie nazwy zmiennej jeżeli to nie jest "errorMessage"
-      // - jeżeli nie działa dla czegoś, co powoduje błąd - np. nieunikatowego emaila,
-      // zakomentować ifa, w miejscu ifa wyświetlić response w konsoli przeglądarki:
-      // console.log(response)
-      // i odpowiednio zmienić nazwę zmiennej lub naprawić backend.
       HTTP.post(`tutors`, this.tutor)
       .then(response => {
-        // if(response.data){
-        //   if(response.data.errorMessage !== ""){
+        if(response.data){
+          if(response.data.errorMessage === null){
             this.statusMsg = "pomyślnie dodano instruktora"
-        //   }
-        //   else {
-        //     this.statusMsg = response.data.errorMessage
-        //   }
-        // }
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
       })
       .catch(() => {
         this.statusMsg = "wystąpił błąd"

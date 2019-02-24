@@ -1,7 +1,7 @@
 <template>
   <div>
     <reservation-form
-    v-bind:reservation="reservation"
+    :reservation="reservation"
     btnText="Rezerwuj stolik"
     @submit="addReservation($event)"/>
     <p v-if="statusMsg">{{ statusMsg }}</p>
