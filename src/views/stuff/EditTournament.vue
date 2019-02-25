@@ -62,16 +62,16 @@ export default {
           promises.push(this.addRental(tournament.id, ar))
         })
         this.tournamentReservations.filter(tr => {
-          removedReservations.indexOf(tr.tableId) != -1
+          return removedReservations.includes(tr.tableId)
         }).forEach(rr => {
           promises.push(this.removeReservation(rr.id))
         })
         this.tournamentRentals.filter(tr => {
-          removedReservations.indexOf(tr.tableId) != -1
+          return removedRentals.includes(tr.copyId)
         }).forEach(rr => {
           promises.push(this.removeRental(rr.id))
         })
-        Promise.all(promises)
+        return Promise.all(promises)
       })
       .catch(() => {
         this.statusMsg = "wystąpił błąd"
@@ -115,7 +115,7 @@ export default {
           }
         }
       })
-    }
+    },
     addReservation: function (tournamentId, tableId) {
       return HTTP.post(`tournament_reservations`, {tournamentId: tournamentId, tableId: tableId})
     },

@@ -57,7 +57,7 @@ export default {
   methods: {
     deleteRental: function (rental) {
       HTTP.delete(`private_rentals/${rental.id}`)
-      .then(response => {
+      .then(() => {
         this.rentals.splice(this.rentals.indexOf(rental), 1);
         this.statusMsg = "anulowano wypożyczenie"
       })
