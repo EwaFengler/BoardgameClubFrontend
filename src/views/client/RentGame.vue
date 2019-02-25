@@ -25,7 +25,7 @@ export default {
         duration: 60,
         date: null,
         time: null,
-        copyId: null
+        copyId: 0
       },
       statusMsg: ''
     }

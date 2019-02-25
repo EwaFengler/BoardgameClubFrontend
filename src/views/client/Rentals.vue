@@ -58,15 +58,8 @@ export default {
     deleteRental: function (rental) {
       HTTP.delete(`private_rentals/${rental.id}`)
       .then(response => {
-        if(response.data){
-          if(response.data.errorMessage === null){
-            this.rentals.splice(this.rentals.indexOf(rental), 1);
-            this.statusMsg = "anulowano wypożyczenie"
-          }
-          else {
-            this.statusMsg = response.data.errorMessage
-          }
-        }
+        this.rentals.splice(this.rentals.indexOf(rental), 1);
+        this.statusMsg = "anulowano wypożyczenie"
       })
       .catch(() => {
         this.statusMsg = "wystąpił błąd"

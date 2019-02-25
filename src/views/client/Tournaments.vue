@@ -8,7 +8,7 @@
       :key="tnmnt.tournamentDTO.id">
       <ul>
         <li>Kiedy: {{ tnmnt.dateObj.toLocaleString() }}</li>
-        <li>Jak długo: {{ tnmnt.tournamentDTO.duration }}min</li>
+        <li @click="calculateFinish(tnmnt)">Jak długo: {{ tnmnt.tournamentDTO.duration }}min</li>
         <li>W co: {{ tnmnt.gameName }}</li>
         <li>
           <button @click="leaveTournament(tnmnt)">Zrezygnuj</button>
@@ -51,6 +51,21 @@ export default {
     })
   },
   methods: {
+    calculateFinish: function (tournament) {
+      let timeQuery = {
+        duration: tournament.tournamentDTO.duration,
+        startTime: tournament.tournamentDTO.startTime
+      };
+      HTTP.post(`tournaments/calculate-finish-time`, timeQuery)
+      .then(response => {
+        let date = response.data.value.substr(0, 10);
+        let time = response.data.value.substr(11, 5);
+        this.statusMsg = "turniej skończy się: " + date + ", " + time;
+      })
+      .catch(() => {
+        this.statusMsg = "wystąpił błąd"
+      })
+    },
     leaveTournament: function (tnmnt) {
       HTTP.delete(`tournament_participants/${this.$route.params.clientId}/${tnmnt.tournamentDTO.id}`)
       .then (() => {

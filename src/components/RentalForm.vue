@@ -2,10 +2,10 @@
   <div>
     <time-form v-if="stage===1"
     :timeObject="timeObject"
-    @timeFilled="proceedToGame($event); stage++"/>
-    <game-form v-if="stage===2"
+    @timeFilled="proceedToGame($event)"/>
+    <game-select-form v-if="stage===2"
     v-bind:games="games"
-    v-bind:currentGame="currentGame"
+    v-bind:currentGame="currentGameId"
     @gameSelected="proceedToSubmit($event); stage++"
     @goBack="stage--"/>
     <rental-summary v-if="stage===3"
@@ -19,7 +19,7 @@
 
 <script>
 import TimeForm from '@/components/TimeForm.vue'
-import TournamentGame from '@/components/TournamentGame.vue'
+import GameSelectForm from '@/components/GameSelectForm.vue'
 import RentalSummary from '@/components/RentalSummary.vue'
 import {HTTP} from '@/http-common'
 
@@ -31,8 +31,7 @@ export default {
   ],
   components: {
     'time-form': TimeForm,
-    // 'game-form': GameForm,
-    'game-form': TournamentGame,
+    'game-select-form': GameSelectForm,
     'rental-summary': RentalSummary
   },
   data () {
@@ -44,39 +43,51 @@ export default {
       timeObject: {
         duration: this.rental.duration,
         date: this.rental.date,
-        time: this.rental.time
+        time: this.rental.time,
+        targetId: this.rental.id
       },
+      currentGameId: null,
       games: [],
       statusMsg: ''
-    }
-  },
-  computed: {
-    currentGame: function () {//TODO: gameId czy copyId?
-      return this.rental.copyId ? this.getCurrentGame() : null;
     }
   },
   methods: {
     proceedToGame: function (timeObject) {
       this.localRental = { ...this.localRental, ...timeObject };
       this.timeObject = timeObject;
-      this.getGames();
+      this.getGames()
+      .then(()  => { return this.getCurrentGameId() })
+      .catch(() => { this.statusMsg = "wystąpił błąd" })
+      .then(()  => { this.stage++ });
+    },
+    proceedToSubmit: function (selectedGameId) {
+      this.localRental.gameId = selectedGameId;
+      this.localRental.gameName = this.games.find(g => {
+        return g.game.id == selectedGameId
+      }).game.name;
     },
     getGames: function () {
-      HTTP.post(`game_copies/available-all`, this.timeObject)
+      return HTTP.post(`game_copies/available-at-private`, this.timeObject)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
           this.games = response.data.values
-          // this.games.forEach(g => {
-          //   g.availableCopies = g.gameCopies.length
-          // })
+          this.games.forEach(g => {
+            g.availableCopies = g.gameCopies.length
+          })
         }
       })
-      .catch(() => {
-        this.statusMsg = "wystąpił błąd"
-      })
     },
-    getCurrentGame: function () {
-      return null //TODO: wciąż nie wiem, co chcę pokazać użytkownikowi
+    getCurrentGameId: async function () {
+      if(this.rental.copyId === null) {
+        this.currentGameId = null;
+        return;
+      }
+      return HTTP.get(`game_copies/${this.rental.copyId}`)
+      .then(response => {
+        if(response.data && response.data.errorMessage === null){
+          this.currentGameId = response.data.gameId
+        }
+      })
     }
   }
 }

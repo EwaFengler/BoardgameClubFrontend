@@ -9,9 +9,9 @@
     v-bind:currentTables="currentTables"
     @tablesSelected="proceedToGame($event)"
     @goBack="stage--"/>
-    <tournament-game v-if="stage===3"
+    <game-select-form v-if="stage===3"
     v-bind:games="games"
-    v-bind:currentGame="currentGame"
+    v-bind:currentGame="tournament.gameId"
     @gameSelected="proceedToCopies($event); stage++"
     @goBack="stage--"/>
     <tournament-copies v-if="stage===4"
@@ -29,8 +29,8 @@
 
 <script>
 import TimeForm from '@/components/TimeForm.vue'
-import TournamentGame from '@/components/TournamentGame.vue'
 import TableForm from '@/components/TableForm.vue'
+import GameSelectForm from '@/components/GameSelectForm.vue'
 import TournamentCopies from '@/components/TournamentCopies.vue'
 import TournamentSummary from '@/components/TournamentSummary.vue'
 import {HTTP} from '@/http-common'
@@ -39,8 +39,8 @@ export default {
   name: 'tournamentForm',
   components: {
     'time-form': TimeForm,
-    'tournament-game': TournamentGame,
     'table-form': TableForm,
+    'game-select-form': GameSelectForm,
     'tournament-copies': TournamentCopies,
     'tournament-summary': TournamentSummary
   },
@@ -81,9 +81,8 @@ export default {
       this.localTournament = { ...this.localTournament, ...timeObject };
       this.timeObject = timeObject;
       this.getTables()
-      .then(()  => { this.getCurrentTables() })
-      .then(()  => { this.getCurrentGame() })
-      .then(()  => { this.getCurrentCopies() })
+      .then(()  => { return this.getCurrentTables() })
+      .then(()  => { return this.getCurrentCopies() })
       .catch(() => { this.statusMsg = "wystąpił błąd" })
       .then(()  => { this.stage++ });
     },
@@ -93,13 +92,12 @@ export default {
       this.getGames()
       .then(() => { this.stage++ });
     },
-    proceedToCopies: function (selectedGame) {
-      this.selectedGame = selectedGame;
-
-        console.log(this.currentCopies)
-          console.log(this.gameCopies)
-      this.localTournament.gameId = selectedGame.id;
-      this.localTournament.gameName = selectedGame.name;
+    proceedToCopies: function (selectedGameId) {
+      this.selectedGame = this.games.find(g => {
+        return g.game.id == selectedGameId
+      }).game;
+      this.localTournament.gameId = this.selectedGame.id;
+      this.localTournament.gameName = this.selectedGame.name;
     },
     proceedToSubmit: function (selectedCopies) {
       this.localTournament.copyIds = selectedCopies;
@@ -135,10 +133,6 @@ export default {
       })
       return Promise.all(promises)
     },
-    getCurrentGame: function () {
-      return null;
-      //TODO : endpoint na daną grę z jej egzemplarzami
-    },
     getCurrentCopies: function () {
       let promises = []
       this.tournament.copyIds.forEach(c => {
@@ -158,7 +152,6 @@ export default {
       return HTTP.get(`game_copies/${copyId}`)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
-          // delete response.data.errorMessage
           this.currentCopies.push(response.data.id)
         }
       })

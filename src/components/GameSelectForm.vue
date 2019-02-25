@@ -2,7 +2,7 @@
   <div>
     <div v-for="game in games" :key="game.game.id" v-if="game.availableCopies">
       <input type="radio" name="game"
-      :value="game.game"
+      :value="game.game.id"
       v-model="selectedGame">
       <ul>
         <li>Nazwa: {{ game.game.name }}</li>
@@ -26,7 +26,7 @@
 <script>
 
 export default {
-  name: 'tournamentTime',
+  name: 'gameSelectForm',
   props: [
     'games',
     'currentGame'
