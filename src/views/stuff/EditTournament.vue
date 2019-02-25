@@ -22,6 +22,8 @@ export default {
     return {
       loadingData: true,
       tournament: {},
+      tournamentReservations: {},
+      tournamentRentals: {},
       statusMsg: ''
     }
   },
@@ -48,7 +50,35 @@ export default {
       let removedRentals = this.getDiff(this.tournament.copyIds, tournament.copyIds);
       let addedRentals = this.getDiff(tournament.copyIds, this.tournament.copyIds);
 
-      HTTP.put(`tournaments`, tournament)
+      this.updateTournamentBase(tournament)
+      .then(() => { return this.getTournamentReservations(tournament) })
+      .then(() => { return this.getTournamentRentals(tournament) })
+      .then(() => {
+        let promises = [];
+        addedReservations.forEach(ar => {
+          promises.push(this.addReservation(tournament.id, ar))
+        })
+        addedRentals.forEach(ar => {
+          promises.push(this.addRental(tournament.id, ar))
+        })
+        this.tournamentReservations.filter(tr => {
+          removedReservations.indexOf(tr.tableId) != -1
+        }).forEach(rr => {
+          promises.push(this.removeReservation(rr.id))
+        })
+        this.tournamentRentals.filter(tr => {
+          removedReservations.indexOf(tr.tableId) != -1
+        }).forEach(rr => {
+          promises.push(this.removeRental(rr.id))
+        })
+        Promise.all(promises)
+      })
+      .catch(() => {
+        this.statusMsg = "wystąpił błąd"
+      })
+    },
+    updateTournamentBase: function (tournament) {
+      return HTTP.put(`tournaments`, tournament)
       .then(response => {
         if(response.data){
           if(response.data.errorMessage === null){
@@ -59,34 +89,44 @@ export default {
           }
         }
       })
-      .catch(() => {
-        this.statusMsg = "wystąpił błąd"
-      })
-
     },
+    getTournamentReservations: function (tournament) {
+      return HTTP.get(`tournament_reservations/all-by-tournament-id/${tournament.id}`)
+      .then(response => {
+        if(response.data){
+          if(response.data.errorMessage === null){
+            this.tournamentReservations = response.data.values
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
+      })
+    },
+    getTournamentRentals: function (tournament) {
+      return HTTP.get(`tournament_rentals/all-by-tournament-id/${tournament.id}`)
+      .then(response => {
+        if(response.data){
+          if(response.data.errorMessage === null){
+            this.tournamentRentals = response.data.values
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
+      })
+    }
     addReservation: function (tournamentId, tableId) {
-      HTTP.post(`tournament_reservations`, {tournamentId: tournamentId, tableId: tableId})
-      .catch(() => {
-        this.statusMsg = "wystąpił błąd"
-      })
-    },
-    removeReservation: function (tournamentId, tableId) {
-      HTTP.delete(`tournament_reservations`, {tournamentId: tournamentId, tableId: tableId})
-      .catch(() => {
-        this.statusMsg = "wystąpił błąd"
-      })
+      return HTTP.post(`tournament_reservations`, {tournamentId: tournamentId, tableId: tableId})
     },
     addRental: function (tournamentId, copyId) {
-      HTTP.post(`tournament_rentals`, {tournamentId: tournamentId, copyId: copyId})
-      .catch(() => {
-        this.statusMsg = "wystąpił błąd"
-      })
+      return HTTP.post(`tournament_rentals`, {tournamentId: tournamentId, copyId: copyId})
     },
-    removeRental: function (tournamentId, copyId) {
-      HTTP.delete(`tournament_rentals`, {tournamentId: tournamentId, copyId: copyId})
-      .catch(() => {
-        this.statusMsg = "wystąpił błąd"
-      })
+    removeReservation: function (reservationId) {
+      return HTTP.delete(`tournament_reservations/${reservationId}`)
+    },
+    removeRental: function (rentalId) {
+      return HTTP.delete(`tournament_rentals/${rentalId}`)
     },
     getDiff: function (arr1, arr2) {
       return arr1.filter(x => !arr2.includes(x));
