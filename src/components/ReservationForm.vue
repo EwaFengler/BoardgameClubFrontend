@@ -51,9 +51,9 @@ export default {
       timeObject: {
         duration: this.reservation.duration,
         date: this.reservation.date,
-        time: this.reservation.time
+        time: this.reservation.time,
+        targetId:  this.reservation.id
       },
-      timeChanged: false,
       currentTable: null,
       currentTutor: null,
       tables: [],
@@ -64,12 +64,11 @@ export default {
   methods: {
     proceedToTables: function (timeObject) {
       this.localReservation = { ...this.localReservation, ...timeObject };
-      this.timeChanged = this.hasTimeChanged(this.reservation, timeObject);
       this.timeObject = timeObject;
       this.getCurrentTable()
       .then(() => { this.getCurrentTutor() })
       .then(() => { this.getTables() })
-      .then(() => {this.stage++});
+      .then(() => { this.stage++ });
     },
     proceedToTutor: function (pickedTable) {
       this.localReservation.numberOfSits = pickedTable.numberOfSits;
@@ -82,13 +81,10 @@ export default {
       this.localReservation.tutorSurname = pickedTutor.surname;
     },
     getTables: function () {
-      return HTTP.post(`tables/available-at`, this.timeObject)
+      return HTTP.post(`tables/available-at-private`, this.timeObject)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
           this.tables = response.data.values
-          if(this.currentTable) {
-            this.tables = [this.currentTable, ...this.tables]
-          }
         }
       })
       .catch(() => {
@@ -96,13 +92,10 @@ export default {
       })
     },
     getTutors: function () {
-      return HTTP.post(`private_reservations/available-tutors-at`, this.timeObject)
+      return HTTP.post(`private_reservations/available-tutors-at-reservation`, this.timeObject)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
           this.tutors = response.data.values
-          if(this.currentTutor) {
-            this.tutors = [this.currentTutor, ...this.tutors]
-          }
         }
       })
       .catch(() => {
@@ -110,7 +103,7 @@ export default {
       })
     },
     getCurrentTable: async function () {
-      if(this.timeChanged){
+      if(this.reservation.tableId === null){
         this.currentTable = null;
         return;
       }
@@ -125,7 +118,7 @@ export default {
       })
     },
     getCurrentTutor: async function () {
-      if(this.timeChanged){
+      if(this.reservation.tutorId === null){
         this.currentTutor = null;
         return;
       }
@@ -139,9 +132,6 @@ export default {
         this.statusMsg = "wystąpił błąd"
       })
     },
-    hasTimeChanged: function (r, to) {
-      return r.date != to.date || r.time != to.time || r.duration != to.duration
-    }
   }
 }
 </script>
