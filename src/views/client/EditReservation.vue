@@ -48,10 +48,16 @@ export default {
       })
     },
     updateReservation: function (reservation) {
-      // TODO: errorMessage
       HTTP.put(`private_reservations`, reservation)
-      .then(() => {
-        this.statusMsg = "pomyślnie zmieniono rezerwację"
+      .then(response => {
+        if(response.data){
+          if(response.data.errorMessage === null) {
+            this.statusMsg = "pomyślnie zmieniono rezerwację"
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
       })
       .catch(() => {
         this.statusMsg = "wystąpił błąd"

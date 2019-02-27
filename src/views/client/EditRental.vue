@@ -44,8 +44,7 @@ export default {
     },
     updateRental: function (rental) {
       HTTP.put(`private_rentals`, rental)
-      .then(response => {
-        console.log(response)
+      .then(() => {
         this.statusMsg = "zmieniono ustawienia wypożyczenia"
       })
       .catch(() => {

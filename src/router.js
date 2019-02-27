@@ -27,6 +27,7 @@ import AddTable from './views/stuff/AddTable.vue'
 import Games from './views/stuff/Games.vue'
 import AddGame from './views/stuff/AddGame.vue'
 import EditGame from './views/stuff/EditGame.vue'
+import GameCopies from './views/stuff/GameCopies.vue'
 import CreatedTournaments from './views/stuff/Tournaments.vue'
 import AddTournament from './views/stuff/AddTournament.vue'
 import EditTournament from './views/stuff/EditTournament.vue'
@@ -155,6 +156,11 @@ export default new Router({
       path: '/secret/games/:gameId',
       name: 'editGame',
       component: EditGame
+    },
+    {
+      path: '/secret/games/:gameId/copies',
+      name: 'gameCopies',
+      component: GameCopies
     },
     {
       path: '/secret/torunaments',

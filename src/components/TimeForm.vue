@@ -1,5 +1,5 @@
 <template>
-  <form>
+  <div>
     Data:<br>
     <input type="date" v-model="localTimeObject.date">
     <br>
@@ -11,7 +11,7 @@
     <br><br>
     <button @click="proceed">dalej</button>
     <p v-for="statusMsg in statusMsgs">{{ statusMsg }}</p>
-  </form>
+  </div>
 </template>
 
 <script>

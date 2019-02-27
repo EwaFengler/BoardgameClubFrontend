@@ -65,15 +65,18 @@ export default {
     proceedToTables: function (timeObject) {
       this.localReservation = { ...this.localReservation, ...timeObject };
       this.timeObject = timeObject;
-      this.getCurrentTable()
-      .then(() => { this.getCurrentTutor() })
-      .then(() => { this.getTables() })
-      .then(() => { this.stage++ });
+      this.getTables()
+      .then(()  => { return this.getCurrentTable() })
+      .then(()  => { this.stage++ })
+      .catch(e => { this.statusMsg = e });
     },
     proceedToTutor: function (pickedTable) {
       this.localReservation.numberOfSits = pickedTable.numberOfSits;
       this.localReservation.tableId = pickedTable.id;
-      this.getTutors().then(() => {this.stage++});
+      this.getTutors()
+      .then(()  => { return this.getCurrentTutor() })
+      .then(()  => { this.stage++ })
+      .catch(e => { this.statusMsg = e });
     },
     proceedToSubmit: function (pickedTutor) {
       this.localReservation.tutorId = pickedTutor.id;
@@ -87,9 +90,6 @@ export default {
           this.tables = response.data.values
         }
       })
-      .catch(() => {
-        this.statusMsg = "wystąpił błąd"
-      })
     },
     getTutors: function () {
       return HTTP.post(`private_reservations/available-tutors-at-reservation`, this.timeObject)
@@ -97,9 +97,6 @@ export default {
         if(response.data && response.data.errorMessage === null){
           this.tutors = response.data.values
         }
-      })
-      .catch(() => {
-        this.statusMsg = "wystąpił błąd"
       })
     },
     getCurrentTable: async function () {
@@ -110,11 +107,13 @@ export default {
       return HTTP.get(`tables/${this.reservation.tableId}`)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
-          this.currentTable = response.data
+          if(this.tables.some(t => { return t.id === response.data.id })){
+            this.currentTable = response.data
+          }
+          else {
+            this.currentTable = null
+          }
         }
-      })
-      .catch(() => {
-        this.statusMsg = "wystąpił błąd"
       })
     },
     getCurrentTutor: async function () {
@@ -125,11 +124,13 @@ export default {
       return HTTP.get(`tutors/${this.reservation.tutorId}`)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
-          this.currentTutor = response.data
+          if(this.tutors.some(t => { return t.id === response.data.id })){
+            this.currentTutor = response.data
+          }
+          else {
+            this.currentTutor = null
+          }
         }
-      })
-      .catch(() => {
-        this.statusMsg = "wystąpił błąd"
       })
     },
   }

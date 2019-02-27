@@ -57,8 +57,8 @@ export default {
       this.timeObject = timeObject;
       this.getGames()
       .then(()  => { return this.getCurrentGameId() })
-      .catch(() => { this.statusMsg = "wystąpił błąd" })
-      .then(()  => { this.stage++ });
+      .then(()  => { this.stage++ })
+      .catch(() => { this.statusMsg = "wystąpił błąd" });
     },
     proceedToSubmit: function (selectedGameId) {
       this.localRental.gameId = selectedGameId;
@@ -85,7 +85,12 @@ export default {
       return HTTP.get(`game_copies/${this.rental.copyId}`)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
-          this.currentGameId = response.data.gameId
+          if(this.games.filter(g => g.availableCopies > 0 ).some(g => g.game.id === response.data.gameId)){
+            this.currentGameId = response.data.gameId
+          }
+          else {
+            this.currentGameId = null
+          }
         }
       })
     }

@@ -3,7 +3,7 @@
     <router-link :to="{ name: 'addGame'}">
       <button>Dodaj grę</button>
     </router-link>
-    <ul>
+    <ul v-if="!loadingData">
       <li v-for="game in games"
       :key=" game.id">
       <ul>
@@ -12,7 +12,11 @@
         <li>Minimum graczy: {{ game.minPlayers }}</li>
         <li>Maksimum graczy: {{ game.maxPlayers }}</li>
         <li>Średni czas gry: {{ game.avgTime }}min</li>
-        <!-- <li>{{ game.number_of_copies }}</li> -->
+        <li>Liczba egzemplarzy: {{ game.numberOfCopies }}
+          <router-link :to="{ name: 'gameCopies', params: {'gameId': game.id}}">
+            <button>egzemplarze</button>
+          </router-link>
+        </li>
         <li v-if="game.description !== ''">
           Opis: {{ game.description }}
         </li>
@@ -36,27 +40,50 @@ export default {
   name: 'games',
   data () {
     return {
+      loadingData: true,
       games: [],
       statusMsg: ''
     }
   },
   mounted: function () {
-    HTTP.get(`games`)
-    .then(response => {
-      if(response.data){
-        if(response.data.errorMessage === null){
-          this.games = response.data.values
-        }
-        else {
-          this.statusMsg = response.data.errorMessage
-        }
-      }
+    this.getGames()
+    .then(() => {
+      let promises = []
+      this.games.forEach(g => {
+        promises.push(this.assignNoOfCopies(g))
+      })
+      return Promise.all(promises)
     })
-    .catch(() => {
-      this.statusMsg = "wystąpił błąd"
-    })
+    .catch(() => { this.statusMsg = "wystąpił błąd" })
+    .then(() => { this.loadingData = false });
   },
   methods: {
+    getGames: function () {
+      return HTTP.get(`games`)
+      .then(response => {
+        if(response.data){
+          if(response.data.errorMessage === null){
+            this.games = response.data.values
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
+      })
+    },
+    assignNoOfCopies: function (game) {
+      return HTTP.get(`game_copies/count/${game.id}`)
+      .then(response => {
+        if(response.data){
+          if(response.data.errorMessage === null){
+            game.numberOfCopies = response.data.value
+          }
+          else {
+            this.statusMsg = response.data.errorMessage
+          }
+        }
+      })
+    },
     deleteGame: function (game) {
       HTTP.delete(`games/${game.id}`)
       .then(() => {

@@ -25,7 +25,8 @@ export default {
         duration: 60,
         date: null,
         time: null,
-        tableId: null
+        tableId: null,
+        tutorId: null
       },
       statusMsg: ''
     }

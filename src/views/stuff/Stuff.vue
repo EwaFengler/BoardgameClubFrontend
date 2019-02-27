@@ -30,7 +30,7 @@ export default {
   methods: {
     backUp: function () {
       return HTTP.get(`/clients/copy-persons-table`)
-      .then(response => {
+      .then(() => {
         this.statusMsg = "pomyślnie wykonano backup"
       })
       .catch(() => {

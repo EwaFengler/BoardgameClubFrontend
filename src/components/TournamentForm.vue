@@ -12,7 +12,7 @@
     <game-select-form v-if="stage===3"
     v-bind:games="games"
     v-bind:currentGame="tournament.gameId"
-    @gameSelected="proceedToCopies($event); stage++"
+    @gameSelected="proceedToCopies($event);"
     @goBack="stage--"/>
     <tournament-copies v-if="stage===4"
     v-bind:copies="gameCopies"
@@ -65,15 +65,9 @@ export default {
       currentCopies: [],
       tables: [],
       games: [],
+      gameCopies: [],
       selectedGame: null,
-      statusMsgs: [] //TODO
-    }
-  },
-  computed: {
-    gameCopies: function () {
-      return this.games.find(g => {
-        return g.game.id == this.selectedGame.id
-      }).gameCopies;
+      statusMsgs: []
     }
   },
   methods: {
@@ -82,27 +76,31 @@ export default {
       this.timeObject = timeObject;
       this.getTables()
       .then(()  => { return this.getCurrentTables() })
-      .then(()  => { return this.getCurrentCopies() })
-      .catch(() => { this.statusMsg = "wystąpił błąd" })
-      .then(()  => { this.stage++ });
+      .then(()  => { this.stage++ })
+      .catch(() => { this.statusMsg = "wystąpił błąd" });
     },
     proceedToGame: function (selectedTables) {
       this.localTournament.numberOfSits = selectedTables.map(t => t.numberOfSits).reduce((acc, b) => acc + b);
       this.localTournament.tableIds = selectedTables.map(t => t.id);
       this.getGames()
-      .then(() => { this.stage++ });
+      .then(() => { this.stage++ })
+      .catch(() => { this.statusMsg = "wystąpił błąd" });
     },
     proceedToCopies: function (selectedGameId) {
       this.selectedGame = this.games.find(g => {
         return g.game.id == selectedGameId
-      }).game;
-      this.localTournament.gameId = this.selectedGame.id;
-      this.localTournament.gameName = this.selectedGame.name;
+      });
+      this.gameCopies = this.selectedGame.gameCopies;
+      this.localTournament.gameId = this.selectedGame.game.id;
+      this.localTournament.gameName = this.selectedGame.game.name;
+      this.getCurrentCopies()
+      .then(() => { this.stage++ })
+      .catch(() => { this.statusMsg = "wystąpił błąd" });
     },
     proceedToSubmit: function (selectedCopies) {
       this.localTournament.copyIds = selectedCopies;
-      this.localTournament.maxPlayers = Math.min(this.localTournament.numberOfSits,
-        this.selectedGame.maxPlayers * selectedCopies.length);
+      this.localTournament.maxPlayers = 
+      Math.min(this.localTournament.numberOfSits, this.selectedGame.game.maxPlayers * selectedCopies.length);
     },
     getTables: function () {
       return HTTP.post(`tables/available-at-tournament`, this.timeObject)
@@ -144,7 +142,9 @@ export default {
       return HTTP.get(`tables/${tableId}`)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
-          this.currentTables.push(response.data)
+          if(this.tables.some(t => { return t.id === response.data.id })){
+            this.currentTables.push(response.data)
+          }
         }
       })
     },
@@ -152,7 +152,9 @@ export default {
       return HTTP.get(`game_copies/${copyId}`)
       .then(response => {
         if(response.data && response.data.errorMessage === null){
-          this.currentCopies.push(response.data.id)
+          if(this.gameCopies.some(c => { return c.id === response.data.id })){
+            this.currentCopies.push(response.data.id)
+          }
         }
       })
     }

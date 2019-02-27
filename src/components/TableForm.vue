@@ -29,7 +29,7 @@ export default {
   },
   methods: {
     proceed: function () {
-      if(this.selectedTables.length === 0){
+      if(this.selectedTables === null || this.selectedTables.length === 0){
         this.statusMsg = "wybierz stolik(i)";
       }
       else {
